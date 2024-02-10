@@ -3,8 +3,8 @@ pub use crate::plugin::CurrentAction;
 pub use crate::{
     dialogue::Dialogue,
     plugin::DialoguePlugin,
-    section::{Sentance, TypeWriter},
-    sections::Paragrah,
+    section::{Sentence, TypeWriter},
+    sections::Paragraph,
 };
 pub(crate) use bevy::{ecs::system::RunSystemOnce, prelude::*};
 pub(crate) use std::{
