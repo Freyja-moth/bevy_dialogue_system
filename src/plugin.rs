@@ -1,11 +1,6 @@
 use crate::prelude::*;
 
 #[derive(Resource, Default)]
-#[cfg(feature = "doc_testing")]
-pub struct CurrentAction(Option<fn(&mut World)>);
-
-#[derive(Resource, Default)]
-#[cfg(not(feature = "doc_testing"))]
 struct CurrentAction(Option<fn(&mut World)>);
 
 pub struct DialoguePlugin;
