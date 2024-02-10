@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use crate::prelude::*;
 
 #[derive(Debug)]
 pub struct TypeWriter {
@@ -24,61 +24,126 @@ impl TypeWriter {
     }
     pub fn advance(&mut self, amount: f32) {
         self.time += amount * self.speed;
-        dbg!(amount * self.speed);
+
         self.time = self.time.clamp(0., 1.);
     }
 
-    pub fn change_speed(mut self, speed: f32) -> Self {
-        self.speed = speed;
-        self
+    pub fn activate(&mut self) {
+        self.active = true;
     }
-    pub fn set_speed(&mut self, speed: f32) {
-        self.speed = speed;
+    pub fn deactivate(&mut self) {
+        self.active = false;
+    }
+    pub fn is_active(&self) -> bool {
+        self.active
     }
 
     pub fn finish(&mut self) {
         self.time = 1.;
     }
+    pub fn reset(&mut self) {
+        self.time = 0.;
+    }
+    pub fn current_time(&self) -> f32 {
+        self.time
+    }
+
+    pub fn change_speed(mut self, speed: f32) -> Self {
+        self.speed = speed.clamp(0., 1.);
+        self
+    }
+    pub fn set_speed(&mut self, speed: f32) {
+        self.speed = speed.clamp(0., 1.);
+    }
+    pub fn speed(&self) -> f32 {
+        self.speed
+    }
 }
 
 #[derive(Default, Debug)]
-pub struct DialogueSection {
-    pub value: String,
-    pub action: Option<fn(&mut World)>,
-    pub font: Handle<Font>,
-    pub color: Color,
-    pub size: f32,
-    pub typewriter: TypeWriter,
+pub struct Sentance {
+    text_section: TextSection,
+    action: Option<fn(&mut World)>,
+    typewriter: TypeWriter,
 }
-impl ToString for DialogueSection {
+impl ToString for Sentance {
     fn to_string(&self) -> String {
         if let Some(characters) = self.typewriter_characters() {
-            self.value[0..characters].to_string()
+            self.text_section.value[0..characters].to_string()
         } else {
-            self.value.to_string()
+            self.text_section.value.to_string()
         }
     }
 }
-impl DialogueSection {
-    pub fn new(value: impl ToString, font: Handle<Font>) -> Self {
+impl Sentance {
+    pub fn new(value: impl ToString) -> Self {
         Self {
-            value: value.to_string(),
+            text_section: TextSection {
+                value: value.to_string(),
+                style: TextStyle {
+                    font_size: 32.,
+                    ..Default::default()
+                },
+            },
             action: None,
-            font,
-            color: Color::GRAY,
-            size: 32.,
             ..Default::default()
         }
     }
-    pub fn new_without_font(value: impl ToString) -> Self {
-        Self {
-            value: value.to_string(),
-            action: None,
-            font: default(),
-            color: Color::GRAY,
-            size: 32.,
-            ..Default::default()
-        }
+
+    pub fn change_text(mut self, value: impl ToString) -> Self {
+        self.text_section.value = value.to_string();
+        self
+    }
+    pub fn set_text(&mut self, value: impl ToString) {
+        self.text_section.value = value.to_string();
+    }
+    pub fn text(&self) -> &str {
+        &self.text_section.value
+    }
+    pub fn mut_text(&mut self) -> &mut str {
+        &mut self.text_section.value
+    }
+
+    pub fn change_font(mut self, font: Handle<Font>) -> Self {
+        self.text_section.style.font = font;
+        self
+    }
+    pub fn set_font(&mut self, font: Handle<Font>) {
+        self.text_section.style.font = font;
+    }
+    pub fn font(&self) -> &Handle<Font> {
+        &self.text_section.style.font
+    }
+    pub fn mut_font(&mut self) -> &mut Handle<Font> {
+        &mut self.text_section.style.font
+    }
+
+    pub fn change_font_size(mut self, size: f32) -> Self {
+        self.text_section.style.font_size = size;
+        self
+    }
+    pub fn set_font_size(&mut self, size: f32) {
+        self.text_section.style.font_size = size;
+    }
+    pub fn font_size(&self) -> &f32 {
+        &self.text_section.style.font_size
+    }
+    pub fn mut_font_size(&mut self) -> &mut f32 {
+        &mut self.text_section.style.font_size
+    }
+
+    pub fn change_color(mut self, color: Color) -> Self {
+        self.text_section.style.color = color;
+        self
+    }
+    pub fn set_color(&mut self, color: Color) {
+        self.text_section.style.color = color;
+    }
+    pub fn color(&self) -> &Color {
+        &self.text_section.style.color
+    }
+    pub fn mut_color(&mut self) -> &mut Color {
+        &mut self.text_section.style.color
     }
 
     pub fn change_action(mut self, action: fn(&mut World)) -> Self {
@@ -92,33 +157,11 @@ impl DialogueSection {
     pub fn set_action(&mut self, action: fn(&mut World)) {
         self.action = Some(action);
     }
-    pub fn reset_action(&mut self) {
-        self.action = None;
+    pub fn get_action(&self) -> Option<&fn(&mut World)> {
+        self.action.as_ref()
     }
-    pub fn action(&self) -> Option<fn(&mut World)> {
-        self.action
-    }
-
-    pub fn change_color(mut self, color: Color) -> Self {
-        self.color = color;
-        self
-    }
-    pub fn set_color(&mut self, color: Color) {
-        self.color = color;
-    }
-    pub fn color(&self) -> Color {
-        self.color
-    }
-
-    pub fn change_size(mut self, size: f32) -> Self {
-        self.size = size;
-        self
-    }
-    pub fn set_size(&mut self, size: f32) {
-        self.size = size;
-    }
-    pub fn size(&self) -> f32 {
-        self.size
+    pub fn get_action_mut(&mut self) -> Option<&mut fn(&mut World)> {
+        self.action.as_mut()
     }
 
     pub fn create_typewriter(mut self) -> Self {
@@ -129,13 +172,19 @@ impl DialogueSection {
         self.typewriter = typewriter;
         self
     }
-    pub fn disable_typewriter(mut self) -> Self {
-        self.typewriter.active = false;
-        self
+    pub fn set_typewriter(&mut self, typewriter: TypeWriter) {
+        self.typewriter = typewriter;
     }
+    pub fn typewriter(&self) -> &TypeWriter {
+        &self.typewriter
+    }
+    pub fn mut_typewriter(&mut self) -> &mut TypeWriter {
+        &mut self.typewriter
+    }
+
     pub fn typewriter_characters(&self) -> Option<usize> {
         if self.typewriter.active {
-            Some((self.typewriter.time * self.value.len() as f32) as usize)
+            Some((self.typewriter.time * self.text_section.value.len() as f32) as usize)
         } else {
             None
         }
@@ -148,9 +197,8 @@ impl DialogueSection {
         TextSection {
             value: self.to_string(),
             style: TextStyle {
-                font: self.font.clone(),
-                font_size: self.size,
-                color: self.color,
+                font: self.font().clone(),
+                ..self.text_section.style
             },
         }
     }

@@ -14,8 +14,17 @@ fn main() {
         .add_plugins((DialoguePlugin, DefaultPlugins))
         .init_resource::<ClearColor>()
         .add_systems(Startup, setup)
-        .add_systems(Update, (exit, show_multiple.run_if(should_show_multiple)))
+        .add_systems(Update, exit)
         .run();
+}
+
+fn enable_second_dialogue(world: &mut World) {
+    let mut dialogue_query = world.query_filtered::<&mut Dialogue, With<SecondaryDialogue>>();
+
+    dialogue_query.single_mut(world).push_back(
+        Paragrah::new(vec![Sentance::new("multiple running at once!")])
+            .change_width(Val::Percent(50.)),
+    );
 }
 
 fn change_background(world: &mut World) {
@@ -33,51 +42,49 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         .spawn(TextBundle::default())
         .insert(Dialogue::new(
             vec![
-                DialogueSections::new(vec![DialogueSection::new_without_font(
+                Paragrah::new(vec![Sentance::new(
                     "Press Enter, Space or A to advance",
                 )]),
-                DialogueSections::new(vec![
-                    DialogueSection::new_without_font("This is a very basic story,\n"),
-                    DialogueSection::new_without_font("that uses colors,\n")
+                Paragrah::new(vec![
+                    Sentance::new("This is a very basic story,\n"),
+                    Sentance::new("that uses colors,\n")
                         .change_color(Color::RED),
-                    DialogueSection::new_without_font("different text sizes,\n").change_size(64.),
-                    DialogueSection::new(
+                    Sentance::new("different text sizes,\n").change_font_size(64.),
+                    Sentance::new(
                         "different fonts for accessibilitys sake,\n",
-                        dyslexic_font,
-                    ),
-                    DialogueSection::new_without_font("and typewriter text... "),
-                    DialogueSection::new_without_font(
+                    ).change_font(dyslexic_font),
+                    Sentance::new("and typewriter text... "),
+                    Sentance::new(
                         "that you can skip if you're really impatient.",
                     )
                     .create_typewriter(),
                 ]),
-                DialogueSections::new(vec![DialogueSection::new_without_font(
+                Paragrah::new(vec![Sentance::new(
                     "It can move itself around.",
                 )])
                 .change_position(UiRect::left(Val::Px(300.))),
-                DialogueSections::new(vec![DialogueSection::new_without_font(
+                Paragrah::new(vec![Sentance::new(
                     "And can squish itself at will.",
-                )])
+                ).change_action(enable_second_dialogue)])
                 .change_position(UiRect::default())
                 .change_width(Val::Percent(25.)),
-                DialogueSections::new(vec![DialogueSection::new_without_font(
+                Paragrah::new(vec![Sentance::new(
                     "You can even have ",
                 )])
                 .change_width(Val::Percent(50.)),
-                DialogueSections::new(vec![
-                    DialogueSection::new_without_font(
+                Paragrah::new(vec![
+                    Sentance::new(
                         "Oh and you can affect the world directly...",
                     )
                     .change_action(change_background),
-                    DialogueSection::new_without_font("like so!"),
+                    Sentance::new("like so!"),
                 ]),
-                DialogueSections::new(vec![DialogueSection::new_without_font(
+                Paragrah::new(vec![Sentance::new(
                     "And it was only after I made this that I realised the yarnspinner plugin was released not ten days ago...",
                 ).change_typewriter(TypeWriter::new().change_speed(0.7))])
                 .change_width(Val::Percent(100.)),
             ],
-            Box::new(KEYS),
-        ))
+        ).change_keys(KEYS.to_vec()))
         .insert(MainDialogue);
 
     commands
@@ -88,33 +95,8 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             },
             ..Default::default()
         })
-        .insert(Dialogue::empty(Box::new(KEYS)))
+        .insert(Dialogue::default().change_keys(KEYS.to_vec()))
         .insert(SecondaryDialogue);
-}
-
-fn should_show_multiple(dialogue: Query<&Dialogue, With<MainDialogue>>) -> bool {
-    dialogue
-        .single()
-        .front()
-        .is_some_and(|front| front.width().is_some_and(|val| val == Val::Percent(50.)))
-}
-
-fn show_multiple(
-    mut secondary: Query<&mut Dialogue, With<SecondaryDialogue>>,
-    mut shown: Local<bool>,
-) {
-    if !*shown {
-        let mut secondary = secondary.single_mut();
-
-        secondary.push_back(
-            DialogueSections::new(vec![DialogueSection::new_without_font(
-                "multiple running at once!",
-            )])
-            .change_width(Val::Percent(50.)),
-        );
-
-        *shown = true;
-    }
 }
 
 fn exit(mut app_exit: EventWriter<AppExit>, dialogue: Query<&Dialogue>) {

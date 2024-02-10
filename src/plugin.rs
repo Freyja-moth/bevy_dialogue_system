@@ -1,14 +1,4 @@
-use crate::dialogue::Dialogue;
-use bevy::{
-    ecs::system::RunSystemOnce,
-    prelude::{
-        App, Input, IntoSystemConfigs, KeyCode, Plugin, Query, Res, ResMut, Resource, Update,
-        Visibility, World,
-    },
-    text::Text,
-    time::Time,
-    ui::Style,
-};
+use crate::prelude::*;
 
 #[derive(Resource, Default)]
 pub(crate) struct CurrentAction(Option<fn(&mut World)>);
@@ -31,6 +21,7 @@ impl Plugin for DialoguePlugin {
     }
 }
 
+///
 fn update_dialogue(
     mut dialogue: Query<&mut Dialogue>,
     mut current_action: ResMut<CurrentAction>,
@@ -38,30 +29,33 @@ fn update_dialogue(
 ) {
     dialogue
         .iter_mut()
-        .filter(|dialogue| input.any_just_pressed(dialogue.skip_keys().iter().cloned()))
+        // Ensure that the dialogue only updates when corresponding keys are pressed
+        .filter(|dialogue| input.any_just_pressed(dialogue.skip_keys().cloned()))
         .filter(|dialogue| dialogue.front().is_some())
         .for_each(|mut dialogue| {
             let front = dialogue.front_mut().unwrap();
-            let all_sections = front.all_sections_visible();
+
+            // Are all paragraphs in the current chapter shown
+            let all_sections = front.all_paragraphs_visible();
+            // Are all characters in the current sentance shown
             let all_characters = front.all_characters_displayed();
 
             current_action.0 = front
-                .get_current_section()
-                .and_then(|section| section.action());
+                .get_current_sentance()
+                .and_then(|section| section.get_action().cloned());
 
             if all_sections && all_characters {
                 dialogue.pop_front();
             } else if all_characters {
-                front.advance_section();
-            } else if let Some(section) = front.get_current_section_mut() {
-                section.typewriter.finish();
+                front.advance_sentance();
+            } else if let Some(section) = front.get_current_sentance_mut() {
+                section.mut_typewriter().finish();
             }
         });
 }
 
 fn run_action(world: &mut World) {
     if let Some(action) = world.resource_mut::<CurrentAction>().0 {
-        println!("HERE");
         world.run_system_once(action);
     }
     world.resource_mut::<CurrentAction>().0 = None;
@@ -91,7 +85,7 @@ fn show_dialogue(mut dialogue_area: Query<(&mut Text, &mut Visibility, &Dialogue
 
 fn move_dialogue(mut dialogue_area: Query<(&mut Style, &Dialogue)>) {
     dialogue_area.iter_mut().for_each(|(mut style, dialogue)| {
-        if let Some(position) = dialogue.front().and_then(|section| section.position()) {
+        if let Some(position) = dialogue.front().and_then(|section| section.get_position()) {
             style.top = position.top;
             style.bottom = position.bottom;
             style.left = position.left;
@@ -102,8 +96,8 @@ fn move_dialogue(mut dialogue_area: Query<(&mut Style, &Dialogue)>) {
 
 fn change_width(mut dialogue_area: Query<(&mut Style, &Dialogue)>) {
     dialogue_area.iter_mut().for_each(|(mut style, dialogue)| {
-        if let Some(width) = dialogue.front().and_then(|section| section.width()) {
-            style.width = width;
+        if let Some(width) = dialogue.front().and_then(|section| section.get_width()) {
+            style.width = *width;
         }
     });
 }
