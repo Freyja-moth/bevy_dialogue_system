@@ -1,3 +1,5 @@
+#[cfg(feature = "doc_testing")]
+pub use crate::plugin::CurrentAction;
 pub use crate::{
     dialogue::Dialogue,
     plugin::DialoguePlugin,

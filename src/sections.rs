@@ -35,6 +35,9 @@ impl Paragrah {
     pub fn current_sentance(&self) -> usize {
         self.current_sentance
     }
+    pub fn sentances(&self) -> usize {
+        self.sentances.len()
+    }
 
     pub fn change_position(mut self, position: UiRect) -> Self {
         self.position = Some(position);

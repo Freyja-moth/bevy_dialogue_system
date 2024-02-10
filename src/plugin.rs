@@ -1,7 +1,12 @@
 use crate::prelude::*;
 
 #[derive(Resource, Default)]
-pub(crate) struct CurrentAction(Option<fn(&mut World)>);
+#[cfg(feature = "doc_testing")]
+pub struct CurrentAction(Option<fn(&mut World)>);
+
+#[derive(Resource, Default)]
+#[cfg(not(feature = "doc_testing"))]
+struct CurrentAction(Option<fn(&mut World)>);
 
 pub struct DialoguePlugin;
 
@@ -21,7 +26,6 @@ impl Plugin for DialoguePlugin {
     }
 }
 
-///
 fn update_dialogue(
     mut dialogue: Query<&mut Dialogue>,
     mut current_action: ResMut<CurrentAction>,
