@@ -1,4 +1,5 @@
 use crate::prelude::*;
+use std::fmt::Display;
 
 #[derive(Debug)]
 pub struct TypeWriter {
@@ -61,21 +62,23 @@ impl TypeWriter {
 }
 
 #[derive(Default, Debug)]
-pub struct Sentance {
+pub struct Sentence {
     text_section: TextSection,
     action: Option<fn(&mut World)>,
     typewriter: TypeWriter,
 }
-impl ToString for Sentance {
-    fn to_string(&self) -> String {
-        if let Some(characters) = self.typewriter_characters() {
+
+impl Display for Sentence {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let str = if let Some(characters) = self.typewriter_characters() {
             self.text_section.value[0..characters].to_string()
         } else {
             self.text_section.value.to_string()
-        }
+        };
+        write!(f, "{}", str)
     }
 }
-impl Sentance {
+impl Sentence {
     pub fn new(value: impl ToString) -> Self {
         Self {
             text_section: TextSection {
@@ -189,7 +192,7 @@ impl Sentance {
             None
         }
     }
-    pub fn is_typwriter_finished(&self) -> bool {
+    pub fn is_typewriter_finished(&self) -> bool {
         !self.typewriter.active || self.typewriter.time == 1.
     }
 

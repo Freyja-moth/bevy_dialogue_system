@@ -1,42 +1,42 @@
 use crate::prelude::*;
 
 #[derive(Default, Debug)]
-pub struct Paragrah {
-    sentances: Vec<Sentance>,
-    current_sentance: usize,
+pub struct Paragraph {
+    sentences: Vec<Sentence>,
+    current_sentence: usize,
     position: Option<UiRect>,
     width: Option<Val>,
 }
-impl Paragrah {
-    pub fn new(sections: Vec<Sentance>) -> Self {
+impl Paragraph {
+    pub fn new(sections: Vec<Sentence>) -> Self {
         Self {
-            sentances: sections,
+            sentences: sections,
             ..Default::default()
         }
     }
 
-    pub fn add_sentance(&mut self, section: Sentance) {
-        self.sentances.push(section);
+    pub fn add_sentence(&mut self, section: Sentence) {
+        self.sentences.push(section);
     }
-    pub fn add_sentances(&mut self, mut section: Vec<Sentance>) {
-        self.sentances.reserve_exact(section.len());
-        self.sentances.append(&mut section);
+    pub fn add_sentences(&mut self, mut section: Vec<Sentence>) {
+        self.sentences.reserve_exact(section.len());
+        self.sentences.append(&mut section);
     }
-    pub fn get_current_sentance(&self) -> Option<&Sentance> {
-        self.sentances.get(self.current_sentance)
+    pub fn get_current_sentence(&self) -> Option<&Sentence> {
+        self.sentences.get(self.current_sentence)
     }
-    pub fn get_current_sentance_mut(&mut self) -> Option<&mut Sentance> {
-        self.sentances.get_mut(self.current_sentance)
+    pub fn get_current_sentence_mut(&mut self) -> Option<&mut Sentence> {
+        self.sentences.get_mut(self.current_sentence)
     }
 
-    pub fn advance_sentance(&mut self) {
-        self.current_sentance += 1;
+    pub fn advance_sentence(&mut self) {
+        self.current_sentence += 1;
     }
-    pub fn current_sentance(&self) -> usize {
-        self.current_sentance
+    pub fn current_sentence(&self) -> usize {
+        self.current_sentence
     }
-    pub fn sentances(&self) -> usize {
-        self.sentances.len()
+    pub fn sentences(&self) -> usize {
+        self.sentences.len()
     }
 
     pub fn change_position(mut self, position: UiRect) -> Self {
@@ -81,24 +81,24 @@ impl Paragrah {
         self.width.as_mut()
     }
 
-    pub fn update_typwriter(&mut self, amount: f32) {
-        if let Some(section) = self.get_current_sentance_mut() {
+    pub fn update_typewriter(&mut self, amount: f32) {
+        if let Some(section) = self.get_current_sentence_mut() {
             section.mut_typewriter().advance(amount);
         }
     }
 
     pub fn all_paragraphs_visible(&self) -> bool {
-        self.current_sentance + 1 == self.sentances.len()
+        self.current_sentence + 1 == self.sentences.len()
     }
     pub fn all_characters_displayed(&self) -> bool {
-        self.get_current_sentance()
-            .is_some_and(|section| section.is_typwriter_finished())
+        self.get_current_sentence()
+            .is_some_and(|section| section.is_typewriter_finished())
     }
 
     pub fn as_text_sections(&self) -> impl Iterator<Item = TextSection> + '_ {
-        self.sentances
+        self.sentences
             .iter()
-            .take(self.current_sentance + 1)
+            .take(self.current_sentence + 1)
             .map(|section| section.as_text_section())
     }
 }

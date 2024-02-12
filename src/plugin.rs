@@ -1,7 +1,7 @@
 use crate::prelude::*;
 
 #[derive(Resource, Default)]
-struct CurrentAction(Option<fn(&mut World)>);
+pub struct CurrentAction(Option<fn(&mut World)>);
 
 pub struct DialoguePlugin;
 
@@ -10,13 +10,14 @@ impl Plugin for DialoguePlugin {
         app.init_resource::<CurrentAction>().add_systems(
             Update,
             (
-                update_dialogue.before(run_action),
+                update_dialogue,
                 run_action,
                 show_dialogue,
                 update_typewriter,
                 move_dialogue,
                 change_width,
-            ),
+            )
+                .chain(),
         );
     }
 }
@@ -36,18 +37,18 @@ fn update_dialogue(
 
             // Are all paragraphs in the current chapter shown
             let all_sections = front.all_paragraphs_visible();
-            // Are all characters in the current sentance shown
+            // Are all characters in the current sentence shown
             let all_characters = front.all_characters_displayed();
 
             current_action.0 = front
-                .get_current_sentance()
+                .get_current_sentence()
                 .and_then(|section| section.get_action().cloned());
 
             if all_sections && all_characters {
                 dialogue.pop_front();
             } else if all_characters {
-                front.advance_sentance();
-            } else if let Some(section) = front.get_current_sentance_mut() {
+                front.advance_sentence();
+            } else if let Some(section) = front.get_current_sentence_mut() {
                 section.mut_typewriter().finish();
             }
         });
@@ -63,7 +64,7 @@ fn run_action(world: &mut World) {
 fn update_typewriter(mut dialogue: Query<&mut Dialogue>, time: Res<Time>) {
     dialogue.iter_mut().for_each(|mut dialogue| {
         if let Some(typewriter) = dialogue.front_mut() {
-            typewriter.update_typwriter(time.delta_seconds());
+            typewriter.update_typewriter(time.delta_seconds());
         }
     });
 }

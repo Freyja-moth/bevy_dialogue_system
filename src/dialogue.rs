@@ -2,21 +2,21 @@ use crate::prelude::*;
 
 #[derive(Component)]
 pub struct Dialogue {
-    chapters: VecDeque<Paragrah>,
+    chapters: VecDeque<Paragraph>,
     skip_keys: Vec<KeyCode>,
 }
 
 impl Default for Dialogue {
     fn default() -> Self {
         Self {
-            chapters: vec![].into(),
+            chapters: VecDeque::new(),
             skip_keys: vec![KeyCode::Space, KeyCode::Return],
         }
     }
 }
 
 impl Deref for Dialogue {
-    type Target = VecDeque<Paragrah>;
+    type Target = VecDeque<Paragraph>;
 
     fn deref(&self) -> &Self::Target {
         &self.chapters
@@ -29,7 +29,7 @@ impl DerefMut for Dialogue {
 }
 
 impl Dialogue {
-    pub fn new(sections: Vec<Paragrah>) -> Self {
+    pub fn new(sections: Vec<Paragraph>) -> Self {
         Self {
             chapters: sections.into(),
             ..Default::default()
