@@ -1,7 +1,7 @@
 use bevy::{app::AppExit, prelude::*};
 use bevy_dialogue_system::prelude::*;
 
-const KEYS: [KeyCode; 3] = [KeyCode::Space, KeyCode::Return, KeyCode::A];
+const KEYS: [KeyCode; 3] = [KeyCode::Space, KeyCode::Enter, KeyCode::KeyA];
 
 #[derive(Component)]
 pub struct MainDialogue;
