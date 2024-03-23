@@ -10,7 +10,7 @@ impl Default for Dialogue {
     fn default() -> Self {
         Self {
             paragraphs: VecDeque::new(),
-            skip_keys: vec![KeyCode::Space, KeyCode::Return],
+            skip_keys: vec![KeyCode::Space, KeyCode::Enter],
         }
     }
 }
