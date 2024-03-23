@@ -25,7 +25,7 @@ impl Plugin for DialoguePlugin {
 fn update_dialogue(
     mut dialogue: Query<&mut Dialogue>,
     mut current_action: ResMut<CurrentAction>,
-    input: Res<Input<KeyCode>>,
+    input: Res<ButtonInput<KeyCode>>,
 ) {
     dialogue
         .iter_mut()
