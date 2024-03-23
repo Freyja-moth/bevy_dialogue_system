@@ -21,9 +21,10 @@ fn main() {
 fn enable_second_dialogue(world: &mut World) {
     let mut dialogue_query = world.query_filtered::<&mut Dialogue, With<SecondaryDialogue>>();
 
-    dialogue_query.single_mut(world).push_back(
-        Paragraph::new(vec![Sentence::new("multiple running at once!")])
-            .change_width(Val::Percent(50.)),
+    dialogue_query.single_mut(world).add_paragraph(
+        Paragraph::new()
+            .with_sentences(vec![Sentence::new().with_text("multiple running at once!")])
+            .with_width(Val::Percent(50.)),
     );
 }
 
@@ -40,51 +41,51 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     commands
         .spawn(TextBundle::default())
-        .insert(Dialogue::new(
+        .insert(Dialogue::new().with_paragraphs(
             vec![
-                Paragraph::new(vec![Sentence::new(
+                Paragraph::new().with_sentences(vec![Sentence::new().with_text(
                     "Press Enter, Space or A to advance",
                 )]),
-                Paragraph::new(vec![
-                    Sentence::new("This is a very basic story,\n"),
-                    Sentence::new("that uses colors,\n")
-                        .change_color(Color::RED),
-                    Sentence::new("different text sizes,\n").change_font_size(64.),
-                    Sentence::new(
+                Paragraph::new().with_sentences(vec![
+                    Sentence::new().with_text("This is a very basic story,\n"),
+                    Sentence::new().with_text("that uses colors,\n")
+                        .with_color(Color::RED),
+                    Sentence::new().with_text("different text sizes,\n").with_font_size(64.),
+                    Sentence::new().with_text(
                         "different fonts for accessibilitys sake,\n",
-                    ).change_font(dyslexic_font),
-                    Sentence::new("and typewriter text... "),
-                    Sentence::new(
+                    ).with_font(dyslexic_font),
+                    Sentence::new().with_text("and typewriter text... "),
+                    Sentence::new().with_text(
                         "that you can skip if you're really impatient.",
                     )
                     .create_typewriter(),
                 ]),
-                Paragraph::new(vec![Sentence::new(
+                Paragraph::new().with_sentences(vec![Sentence::new().with_text(
                     "It can move itself around.",
                 )])
-                .change_position(UiRect::left(Val::Px(300.))),
-                Paragraph::new(vec![Sentence::new(
+                .with_position(UiRect::left(Val::Px(300.))),
+                Paragraph::new().with_sentences(vec![Sentence::new().with_text(
                     "And can squish itself at will.",
-                ).change_action(enable_second_dialogue)])
-                .change_position(UiRect::default())
-                .change_width(Val::Percent(25.)),
-                Paragraph::new(vec![Sentence::new(
+                ).with_action(enable_second_dialogue)])
+                .with_position(UiRect::default())
+                .with_width(Val::Percent(25.)),
+                Paragraph::new().with_sentences(vec![Sentence::new().with_text(
                     "You can even have ",
                 )])
-                .change_width(Val::Percent(50.)),
-                Paragraph::new(vec![
-                    Sentence::new(
+                .with_width(Val::Percent(50.)),
+                Paragraph::new().with_sentences(vec![
+                    Sentence::new().with_text(
                         "Oh and you can affect the world directly...",
                     )
-                    .change_action(change_background),
-                    Sentence::new("like so!"),
+                    .with_action(change_background),
+                    Sentence::new().with_text("like so!"),
                 ]),
-                Paragraph::new(vec![Sentence::new(
+                Paragraph::new().with_sentences(vec![Sentence::new().with_text(
                     "And it was only after I made this that I realised the yarnspinner plugin was released not ten days ago...",
-                ).change_typewriter(TypeWriter::new().change_speed(0.7))])
-                .change_width(Val::Percent(100.)),
+                ).with_typewriter(TypeWriter::new().with_speed(0.7))])
+                .with_width(Val::Percent(100.)),
             ],
-        ).change_keys(KEYS.to_vec()))
+        ).with_keys(KEYS.to_vec()))
         .insert(MainDialogue);
 
     commands
@@ -95,7 +96,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             },
             ..Default::default()
         })
-        .insert(Dialogue::default().change_keys(KEYS.to_vec()))
+        .insert(Dialogue::default().with_keys(KEYS.to_vec()))
         .insert(SecondaryDialogue);
 }
 
