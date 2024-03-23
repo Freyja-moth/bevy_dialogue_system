@@ -4,6 +4,7 @@ use crate::prelude::*;
 pub struct Dialogue {
     paragraphs: VecDeque<Paragraph>,
     skip_keys: Vec<KeyCode>,
+    hide_on_empty: bool,
 }
 
 impl Default for Dialogue {
@@ -11,6 +12,7 @@ impl Default for Dialogue {
         Self {
             paragraphs: VecDeque::new(),
             skip_keys: vec![KeyCode::Space, KeyCode::Enter],
+            hide_on_empty: true,
         }
     }
 }
@@ -159,5 +161,16 @@ impl Dialogue {
     /// ```
     pub fn mut_skip_keys(&mut self) -> impl Iterator<Item = &mut KeyCode> {
         self.skip_keys.iter_mut()
+    }
+
+    pub fn with_hide_on_empty(mut self, hide: bool) -> Self {
+        self.hide_on_empty = hide;
+        self
+    }
+    pub fn set_hide_on_empty(&mut self, hide: bool) {
+        self.hide_on_empty = hide;
+    }
+    pub fn hide_on_empty(&self) -> bool {
+        self.hide_on_empty
     }
 }

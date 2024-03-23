@@ -72,6 +72,7 @@ fn update_typewriter(mut dialogue: Query<&mut Dialogue>, time: Res<Time>) {
 fn show_dialogue(mut dialogue_area: Query<(&mut Text, &mut Visibility, &Dialogue)>) {
     dialogue_area
         .iter_mut()
+        .filter(|(.., dialogue)| dialogue.hide_on_empty())
         .for_each(|(mut text, mut visibility, dialogue)| {
             if let Some(section) = dialogue.get_current_paragraph() {
                 *visibility = Visibility::Inherited;
