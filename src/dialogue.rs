@@ -2,38 +2,66 @@ use crate::prelude::*;
 
 #[derive(Component)]
 pub struct Dialogue {
-    chapters: VecDeque<Paragraph>,
+    paragraphs: VecDeque<Paragraph>,
     skip_keys: Vec<KeyCode>,
 }
 
 impl Default for Dialogue {
     fn default() -> Self {
         Self {
-            chapters: VecDeque::new(),
+            paragraphs: VecDeque::new(),
             skip_keys: vec![KeyCode::Space, KeyCode::Return],
         }
     }
 }
 
-impl Deref for Dialogue {
-    type Target = VecDeque<Paragraph>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.chapters
-    }
-}
-impl DerefMut for Dialogue {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.chapters
-    }
-}
-
 impl Dialogue {
-    pub fn new(sections: Vec<Paragraph>) -> Self {
+    pub fn new() -> Self {
         Self {
-            chapters: sections.into(),
             ..Default::default()
         }
+    }
+
+    pub fn with_paragraphs(mut self, paragraphs: Vec<Paragraph>) -> Self {
+        self.paragraphs = paragraphs.into();
+        self
+    }
+    pub fn push_paragraphs(mut self, paragraph: Paragraph) -> Self {
+        self.paragraphs.push_back(paragraph);
+        self
+    }
+    pub fn set_paragraphs(&mut self, paragraphs: Vec<Paragraph>) {
+        self.paragraphs = paragraphs.into();
+    }
+    pub fn add_paragraphs(&mut self, paragraphs: Vec<Paragraph>) {
+        self.paragraphs.reserve_exact(paragraphs.len());
+        paragraphs
+            .into_iter()
+            .for_each(|paragraph| self.paragraphs.push_back(paragraph));
+    }
+    pub fn add_paragraph(&mut self, paragraph: Paragraph) {
+        self.paragraphs.push_back(paragraph);
+    }
+    pub fn get_current_paragraph(&self) -> Option<&Paragraph> {
+        self.paragraphs.front()
+    }
+    pub fn get_current_paragraph_mut(&mut self) -> Option<&mut Paragraph> {
+        self.paragraphs.front_mut()
+    }
+    pub fn advance_paragraph(&mut self) {
+        self.paragraphs.pop_front();
+    }
+    pub fn paragraphs(&self) -> &VecDeque<Paragraph> {
+        &self.paragraphs
+    }
+    pub fn paragraphs_mut(&mut self) -> &mut VecDeque<Paragraph> {
+        &mut self.paragraphs
+    }
+    pub fn len(&self) -> usize {
+        self.paragraphs.len()
+    }
+    pub fn is_empty(&self) -> bool {
+        self.paragraphs.is_empty()
     }
 
     /// ```rust
@@ -43,13 +71,28 @@ impl Dialogue {
     ///
     /// const NEW_KEYS: [KeyCode; 2] = [KeyCode::A, KeyCode::Space];
     ///
-    /// let dialogue = Dialogue::default().change_keys(NEW_KEYS.to_vec());
+    /// let dialogue = Dialogue::default().with_keys(NEW_KEYS.to_vec());
     ///
     ///
     /// assert_eq!(dialogue.skip_keys().cloned().collect_vec(), NEW_KEYS.to_vec());
     /// ```
-    pub fn change_keys(mut self, keys: Vec<KeyCode>) -> Self {
+    pub fn with_keys(mut self, keys: Vec<KeyCode>) -> Self {
         self.skip_keys = keys;
+        self
+    }
+    /// ```rust
+    /// # use bevy_dialogue_system::prelude::*;
+    /// # use bevy::prelude::*;
+    /// # use itertools::Itertools;
+    ///
+    ///
+    /// let dialogue = Dialogue::default().push_key(KeyCode::A);
+    ///
+    ///
+    /// assert_eq!(dialogue.skip_keys().last().cloned(), Some(KeyCode::A));
+    /// ```
+    pub fn push_key(mut self, key: KeyCode) -> Self {
+        self.skip_keys.push(key);
         self
     }
 
@@ -68,6 +111,21 @@ impl Dialogue {
     /// ```
     pub fn set_keys(&mut self, keys: Vec<KeyCode>) {
         self.skip_keys = keys;
+    }
+    /// ```rust
+    /// # use bevy_dialogue_system::prelude::*;
+    /// # use bevy::prelude::*;
+    /// # use itertools::Itertools;
+    ///
+    /// let mut dialogue = Dialogue::default();
+    ///
+    /// dialogue.add_key(KeyCode::B);
+    ///
+    /// assert_eq!(dialogue.skip_keys().last().cloned(), Some(KeyCode::B));
+    ///
+    /// ```
+    pub fn add_key(&mut self, key: KeyCode) {
+        self.skip_keys.push(key);
     }
 
     /// ```rust
