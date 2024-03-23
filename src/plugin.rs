@@ -31,9 +31,9 @@ fn update_dialogue(
         .iter_mut()
         // Ensure that the dialogue only updates when corresponding keys are pressed
         .filter(|dialogue| input.any_just_pressed(dialogue.skip_keys().cloned()))
-        .filter(|dialogue| dialogue.front().is_some())
+        .filter(|dialogue| dialogue.get_current_paragraph().is_some())
         .for_each(|mut dialogue| {
-            let front = dialogue.front_mut().unwrap();
+            let front = dialogue.get_current_paragraph_mut().unwrap();
 
             // Are all paragraphs in the current chapter shown
             let all_sections = front.all_paragraphs_visible();
@@ -45,7 +45,7 @@ fn update_dialogue(
                 .and_then(|section| section.get_action().cloned());
 
             if all_sections && all_characters {
-                dialogue.pop_front();
+                dialogue.advance_paragraph();
             } else if all_characters {
                 front.advance_sentence();
             } else if let Some(section) = front.get_current_sentence_mut() {
@@ -63,7 +63,7 @@ fn run_action(world: &mut World) {
 
 fn update_typewriter(mut dialogue: Query<&mut Dialogue>, time: Res<Time>) {
     dialogue.iter_mut().for_each(|mut dialogue| {
-        if let Some(typewriter) = dialogue.front_mut() {
+        if let Some(typewriter) = dialogue.get_current_paragraph_mut() {
             typewriter.update_typewriter(time.delta_seconds());
         }
     });
@@ -73,7 +73,7 @@ fn show_dialogue(mut dialogue_area: Query<(&mut Text, &mut Visibility, &Dialogue
     dialogue_area
         .iter_mut()
         .for_each(|(mut text, mut visibility, dialogue)| {
-            if let Some(section) = dialogue.front() {
+            if let Some(section) = dialogue.get_current_paragraph() {
                 *visibility = Visibility::Inherited;
 
                 text.sections = section.as_text_sections().collect();
@@ -85,7 +85,10 @@ fn show_dialogue(mut dialogue_area: Query<(&mut Text, &mut Visibility, &Dialogue
 
 fn move_dialogue(mut dialogue_area: Query<(&mut Style, &Dialogue)>) {
     dialogue_area.iter_mut().for_each(|(mut style, dialogue)| {
-        if let Some(position) = dialogue.front().and_then(|section| section.get_position()) {
+        if let Some(position) = dialogue
+            .get_current_paragraph()
+            .and_then(|section| section.get_position())
+        {
             style.top = position.top;
             style.bottom = position.bottom;
             style.left = position.left;
@@ -96,7 +99,10 @@ fn move_dialogue(mut dialogue_area: Query<(&mut Style, &Dialogue)>) {
 
 fn change_width(mut dialogue_area: Query<(&mut Style, &Dialogue)>) {
     dialogue_area.iter_mut().for_each(|(mut style, dialogue)| {
-        if let Some(width) = dialogue.front().and_then(|section| section.get_width()) {
+        if let Some(width) = dialogue
+            .get_current_paragraph()
+            .and_then(|section| section.get_width())
+        {
             style.width = *width;
         }
     });
