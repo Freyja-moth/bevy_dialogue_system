@@ -5,10 +5,7 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[features]
-doc_testing = []
 
 [dependencies]
 bevy = "0.13"
-bevy_editor_pls = "0.7.0"
 itertools = "0.12.1"
