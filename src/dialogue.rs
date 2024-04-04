@@ -71,7 +71,7 @@ impl Dialogue {
     /// # use bevy::prelude::*;
     /// # use itertools::Itertools;
     ///
-    /// const NEW_KEYS: [KeyCode; 2] = [KeyCode::A, KeyCode::Space];
+    /// const NEW_KEYS: [KeyCode; 2] = [KeyCode::KeyA, KeyCode::Space];
     ///
     /// let dialogue = Dialogue::default().with_keys(NEW_KEYS.to_vec());
     ///
@@ -88,10 +88,10 @@ impl Dialogue {
     /// # use itertools::Itertools;
     ///
     ///
-    /// let dialogue = Dialogue::default().push_key(KeyCode::A);
+    /// let dialogue = Dialogue::default().push_key(KeyCode::KeyA);
     ///
     ///
-    /// assert_eq!(dialogue.skip_keys().last().cloned(), Some(KeyCode::A));
+    /// assert_eq!(dialogue.skip_keys().last().cloned(), Some(KeyCode::KeyA));
     /// ```
     pub fn push_key(mut self, key: KeyCode) -> Self {
         self.skip_keys.push(key);
@@ -103,7 +103,7 @@ impl Dialogue {
     /// # use bevy::prelude::*;
     /// # use itertools::Itertools;
     ///
-    /// const NEW_KEYS: [KeyCode; 2] = [KeyCode::A, KeyCode::Space];
+    /// const NEW_KEYS: [KeyCode; 2] = [KeyCode::KeyA, KeyCode::Space];
     ///
     /// let mut dialogue = Dialogue::default();
     ///
@@ -121,9 +121,9 @@ impl Dialogue {
     ///
     /// let mut dialogue = Dialogue::default();
     ///
-    /// dialogue.add_key(KeyCode::B);
+    /// dialogue.add_key(KeyCode::KeyB);
     ///
-    /// assert_eq!(dialogue.skip_keys().last().cloned(), Some(KeyCode::B));
+    /// assert_eq!(dialogue.skip_keys().last().cloned(), Some(KeyCode::KeyB));
     ///
     /// ```
     pub fn add_key(&mut self, key: KeyCode) {
@@ -137,7 +137,7 @@ impl Dialogue {
     ///
     /// let dialogue = Dialogue::default();
     ///
-    /// assert_eq!(dialogue.skip_keys().cloned().collect_vec(), vec![KeyCode::Space, KeyCode::Return]);
+    /// assert_eq!(dialogue.skip_keys().cloned().collect_vec(), vec![KeyCode::Space, KeyCode::Enter]);
     /// ```
     pub fn skip_keys(&self) -> impl Iterator<Item = &KeyCode> {
         self.skip_keys.iter()
@@ -153,11 +153,11 @@ impl Dialogue {
     ///     let mut keys = dialogue.mut_skip_keys();
     ///
     ///     if let Some(first) = keys.next() {
-    ///         *first = KeyCode::Z;
+    ///         *first = KeyCode::KeyZ;
     ///     }
     /// }
     ///
-    /// assert_eq!(dialogue.skip_keys().cloned().collect_vec(), vec![KeyCode::Z, KeyCode::Return]);
+    /// assert_eq!(dialogue.skip_keys().cloned().collect_vec(), vec![KeyCode::KeyZ, KeyCode::Enter]);
     /// ```
     pub fn mut_skip_keys(&mut self) -> impl Iterator<Item = &mut KeyCode> {
         self.skip_keys.iter_mut()

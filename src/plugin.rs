@@ -10,10 +10,11 @@ impl Plugin for DialoguePlugin {
         app.init_resource::<CurrentAction>().add_systems(
             Update,
             (
-                update_dialogue,
+                advance_dialogue,
                 run_action,
                 show_dialogue,
                 update_typewriter,
+                update_dialogue,
                 move_dialogue,
                 change_width,
             )
@@ -22,7 +23,7 @@ impl Plugin for DialoguePlugin {
     }
 }
 
-fn update_dialogue(
+fn advance_dialogue(
     mut dialogue: Query<&mut Dialogue>,
     mut current_action: ResMut<CurrentAction>,
     input: Res<ButtonInput<KeyCode>>,
@@ -61,23 +62,29 @@ fn run_action(world: &mut World) {
     world.resource_mut::<CurrentAction>().0 = None;
 }
 
-fn update_typewriter(mut dialogue: Query<&mut Dialogue>, time: Res<Time>) {
-    dialogue.iter_mut().for_each(|mut dialogue| {
-        if let Some(typewriter) = dialogue.get_current_paragraph_mut() {
-            typewriter.update_typewriter(time.delta_seconds());
+fn update_dialogue(mut dialogue_area: Query<(&mut Text, &Dialogue)>) {
+    dialogue_area.iter_mut().for_each(|(mut text, dialogue)| {
+        if let Some(paragraph) = dialogue.get_current_paragraph() {
+            text.sections = paragraph.as_text_sections().collect();
         }
     });
 }
 
-fn show_dialogue(mut dialogue_area: Query<(&mut Text, &mut Visibility, &Dialogue)>) {
+fn update_typewriter(mut dialogue: Query<&mut Dialogue>, time: Res<Time>) {
+    dialogue.iter_mut().for_each(|mut dialogue| {
+        if let Some(paragraph) = dialogue.get_current_paragraph_mut() {
+            paragraph.update_typewriter(time.delta_seconds());
+        }
+    });
+}
+
+fn show_dialogue(mut dialogue_area: Query<(&mut Visibility, &Dialogue)>) {
     dialogue_area
         .iter_mut()
         .filter(|(.., dialogue)| dialogue.hide_on_empty())
-        .for_each(|(mut text, mut visibility, dialogue)| {
-            if let Some(section) = dialogue.get_current_paragraph() {
+        .for_each(|(mut visibility, dialogue)| {
+            if dialogue.get_current_paragraph().is_some() {
                 *visibility = Visibility::Inherited;
-
-                text.sections = section.as_text_sections().collect();
             } else {
                 *visibility = Visibility::Hidden;
             }
